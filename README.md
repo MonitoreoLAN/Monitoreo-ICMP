@@ -42,3 +42,13 @@ Abrir PowerShell como administrador y ejecutar:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 📥 2. Clonar el Repositorio
+
+# Clonar por HTTPS
+git clone https://github.com/MonitoreoLAN/Monitoreo-ICMP.git
+
+# O clonar por SSH
+git clone git@github.com:MonitoreoLAN/Monitoreo_IPS.git
+
+Entrar al proyecto:
+
+cd Monitoreo_IPS
