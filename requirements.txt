@@ -10,7 +10,7 @@ password_strength
 apscheduler
 email_validator
 requests
-opencv-python
+opencv-python-headless
 schedule
 Pillow
 icmplib
