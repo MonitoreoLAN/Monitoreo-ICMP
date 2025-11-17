@@ -28,20 +28,14 @@ Aplicación construida en **Flask**, con scheduler integrado para ejecutar escan
 ---
 
 🛠️ Tecnologías
+- Python
+- Flask
+- SQLite
+- SQLAlchemy
+-APScheduler
+- ICMPLib/ Ping
 
-Python
-
-Flask
-
-SQLite
-
-SQLAlchemy
-
-APScheduler
-
-ICMPLib / Ping
 ---
-
 
 **Configuración**
 
@@ -119,6 +113,7 @@ Sistema Operativo Windows
  Nota: para ejecutar una aplicación Flask en modo de depuración:
  
      flask run --debug
+
 
 
 
