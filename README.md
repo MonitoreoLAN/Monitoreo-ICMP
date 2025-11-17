@@ -51,13 +51,13 @@ Aplicación construida en **Flask**, con scheduler integrado para ejecutar escan
 3.- Clonar el repositorio
     apt install git
     
-    git clone https://github.com/MonitoreoLAN/MONITOREO-TLPG.git 
+    git clone https://github.com/MonitoreoLAN/MONITOREO-ICMP.git 
 
 
 
 4.- Ingrese al directorio principal del Proyecto
 
-     cd MONITOREO-TLPG
+     cd MONITOREO-ICMP
      
 
 ```Entorno Virtual```
@@ -113,6 +113,7 @@ Sistema Operativo Windows
  Nota: para ejecutar una aplicación Flask en modo de depuración:
  
      flask run --debug
+
 
 
 
