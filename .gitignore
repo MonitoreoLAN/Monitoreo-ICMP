@@ -55,3 +55,5 @@ coverage.xml
 # MyPy
 .mypy_cache/
 .dmypy.json
+
+ipmon/static/images/hosts/*
