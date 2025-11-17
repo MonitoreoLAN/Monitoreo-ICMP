@@ -41,7 +41,7 @@ def login():
             remember_me = form.remember_me.data
 
             if not get_user(username) or not verify_password(username, password):
-                flash('Invalid Username/Password combination', 'danger')
+                flash('Combinación de nombre de usuario y contraseña no válida.', 'danger')
                 return redirect(url_for('auth.login'))
 
             user = User()
@@ -64,24 +64,24 @@ def update_password():
     if request.method == 'POST':
         if form.validate_on_submit():
             if not verify_password(flask_login.current_user.id, form.current_password.data):
-                flash('Current password is invalid', 'danger')
+                flash('La contraseña actual no es válida.', 'danger')
                 return redirect(url_for('main.account'))
             if not form.new_password.data == form.verify_password.data:
-                flash('Passwords did not match', 'danger')
+                flash('Las contraseñas no coinciden.', 'danger')
                 return redirect(url_for('main.account'))
             if test_password(form.new_password.data):
                 reqs = form.new_password.description
-                flash('Password did not meet {}'.format(reqs), 'danger')
+                flash('La contraseña no cumple con los requisitos. {}'.format(reqs), 'danger')
                 return redirect(url_for('main.account'))
 
             try:
                 current_user = Users.query.filter_by(username=flask_login.current_user.id).first()
                 current_user.password = sha256_crypt.hash(form.new_password.data)
                 db.session.commit()
-                flash('Password successfully updated', 'success')
+                flash('Contraseña actualizada correctamente.', 'success')
             except Exception as exc:
-                log.error('Failed to update user password: {}'.format(exc))
-                flash('Failed to update password', 'danger')
+                log.error('Error al actualizar la contraseña del usuario: {}'.format(exc))
+                flash('Error al actualizar la contraseña del usuario', 'danger')
 
         else:
             for dummy, errors in form.errors.items():
@@ -98,20 +98,20 @@ def update_email():
     if request.method == 'POST':
         if form.validate_on_submit():
             if not verify_password(flask_login.current_user.id, form.password.data):
-                flash('Current password is invalid', 'danger')
+                flash('La contraseña actual no es válida.', 'danger')
                 return redirect(url_for('main.account'))
             if not form.email.data == form.email_verify.data:
-                flash('Email addresses did not match', 'danger')
+                flash('Las direcciones de correo electrónico no coincidieron.', 'danger')
                 return redirect(url_for('main.account'))
 
             try:
                 current_user = Users.query.filter_by(username=flask_login.current_user.id).first()
                 current_user.email = form.email.data
                 db.session.commit()
-                flash('Email successfully updated', 'success')
+                flash('Correo electrónico actualizado correctamente.', 'success')
             except Exception as exc:
-                log.error('Failed to update email address: {}'.format(exc))
-                flash('Failed to update email address', 'danger')
+                log.error('Error al actualizar la dirección de correo electrónico: {}'.format(exc))
+                flash('Error al actualizar la dirección de correo electrónico.', 'danger')
 
         else:
             for dummy, errors in form.errors.items():
@@ -124,7 +124,7 @@ def update_email():
 @auth.route('/addUser', methods=['GET', 'POST'])
 @flask_login.login_required
 def add_user():
-    '''Add user to database'''
+    '''Agregar ususrio a la BD'''
     if request.method == 'GET':
         return render_template('addUser.html')
     elif request.method == 'POST':
@@ -135,31 +135,31 @@ def add_user():
         errors = 0
 
         if password != password_verify:
-            # Verify passwords matched
-            flash('Passwords do not match', 'danger')
+            # Verificar si las contraseñas coinciden
+            flash('Las contraseñas no coinciden.', 'danger')
             errors += 1
         if Users.query.filter_by(username=username).first():
-            # Check to see if username exists
-            flash('Username already exists', 'danger')
+            # Veridicar si el usuario ya existe
+            flash('El nombre de usuario ya existe.', 'danger')
             errors += 1
         if Users.query.filter_by(email=email).first():
-            # Check to see if email already exists
-            flash('Email address already exists', 'danger')
+            # Verificar si el correo  ya existe
+            flash('El e-mail ya existe', 'danger')
             errors += 1
 
         if errors:
             return redirect(url_for('auth.add_user'))
 
         try:
-            # create new user with the form data. Hash the password so plaintext version isn't saved.
+            # Crear un nuevo usuario con los datos del formulario. Hashear la contraseña para que la versión en texto plano no se guard.
             new_user = Users(email=email, username=username, password=sha256_crypt.hash(password))
 
-            # add the new user to the database
+            # Agregra usuario a la BD
             db.session.add(new_user)
             db.session.commit()
-            flash('Succussfully added user {}'.format(new_user.username), 'success')
+            flash('Usuario agregado correctamente.{}'.format(new_user.username), 'success')
         except Exception:
-            flash('Failed to add user', 'danger')
+            flash('Error al agregar el usuario', 'danger')
 
         return redirect(url_for('auth.add_user'))
 
