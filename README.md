@@ -75,7 +75,7 @@ source .venv/bin/activate
 📦 4. Instalar Dependencias
 (Opcional en Windows) Actualizar pip:
 
-python.exe -m pip install --upgrade pip
+            python.exe -m pip install --upgrade pip
 
 Instalar dependencias:
 
@@ -131,6 +131,7 @@ Monitoreo_IPS/
     APScheduler
 
     ICMPLib / Ping
+
 
 
 
