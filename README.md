@@ -52,3 +52,97 @@ git clone git@github.com:MonitoreoLAN/Monitoreo_IPS.git
 Entrar al proyecto:
 
 cd Monitoreo_IPS
+
+🧪 3. Crear Entorno Virtual
+Windows
+
+python -m venv .venv
+
+Linux
+
+virtualenv .venv
+
+Activar entorno
+
+Windows:
+
+.\.venv\Scripts\activate
+
+Linux:
+
+source .venv/bin/activate
+
+📦 4. Instalar Dependencias
+Opcional (Windows): actualizar pip
+
+python.exe -m pip install --upgrade pip
+
+Instalar requerimientos
+
+pip install -r requirements.txt
+
+🚀 5. Iniciar el Servidor Flask
+
+flask run
+
+El sistema iniciará en:
+
+http://127.0.0.1:5000
+
+Cambiar el puerto:
+
+flask run --port 5050
+
+Aceptar conexiones desde la red:
+
+flask run --host 0.0.0.0 --port 5000
+
+Modo depuración:
+
+flask run --debug
+
+🗂️ Estructura del Proyecto
+
+Monitoreo_IPS/
+│── ipmon/
+│   ├── static/           # CSS, JS, imágenes
+│   ├── templates/        # Archivos HTML
+│   ├── models/           # Modelos SQLAlchemy
+│   ├── scheduler/        # Configuración de tareas
+│   ├── smtp.py           # Envíos de email
+│   ├── alerts.py         # Alertas
+│   └── ...
+│
+├── requirements.txt
+├── README.md
+└── .gitignore
+
+🛠️ Tecnologías Utilizadas
+
+    Python
+
+    Flask
+
+    SQLite
+
+    SQLAlchemy
+
+    APScheduler
+
+    Pillow / OpenCV
+
+    ICMPLib / Ping nativo
+
+📝 Notas Importantes
+
+    En Linux, ICMP puede requerir permisos especiales o capacidades (CAP_NET_RAW).
+
+    La carpeta instance/ está ignorada para evitar subir configuraciones sensibles.
+
+    La base de datos SQLite se crea automáticamente.
+
+🤝 Contribuir
+
+Abrir un Issue o enviar un Pull Request.
+Toda contribución es bienvenida.
+📄 Licencia
