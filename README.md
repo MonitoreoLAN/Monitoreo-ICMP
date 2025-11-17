@@ -1,17 +1,38 @@
+# 🌐 Monitoreo ICMP / LAN
+
+Monitoreo de direcciones IP mediante solicitudes ICMP (ping), con visualización web, historial y almacenamiento en SQLite.  
+Aplicación construida en **Flask**, con scheduler integrado para ejecutar escaneos automáticos.
+
+---
+
+## 🏷️ Badges
+![Python](https://img.shields.io/badge/Python-3.11+-blue)
+![Flask](https://img.shields.io/badge/Flask-App-black)
+![Status](https://img.shields.io/badge/Status-Active-success)
+
+---
+
+## 📌 Características
+
+- ✔️ Monitoreo ICMP continuo  
+- ✔️ Dashboard web  
+- ✔️ Registro histórico  
+- ✔️ Base SQLite integrada  
+- ✔️ Compatible Windows / Linux  
+
+---
+
+## ⚙️ Requisitos Previos
+
+- Python **3.11+**
+
+---
 Monitorear direcciones IP mediante solicitudes ICMP (ping) por medio de consultas.
 Se proporciona una aplicación web mediante Flask para ver los estados de las direcciones IP y el historial de encuestas.
 La encuesta se ejecuta como un servicio como parte de la aplicación web.
 Se utiliza una base de datos SQLite para almacenar hosts, resultados de encuestas, cuentas de usuario, etc.
 
 **Configuración**
-Los siguientes ajustes deberán realizarse para la configuración:
-
-```Cambiar Politicas (solo Windows)```
-
- En windows cambiar las politicas, ejecute Powershell como administrdor y ejecute el siguiente comando:
-
-     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
 
 ```Instalar Python```
 
@@ -87,6 +108,7 @@ Sistema Operativo Windows
  Nota: para ejecutar una aplicación Flask en modo de depuración:
  
      flask run --debug
+
 
 
 
