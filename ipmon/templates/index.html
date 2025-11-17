@@ -1,0 +1,251 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<section id="expand-me">
+  <!-- Botón de expansión -->
+  <button class="button is-small is-pulled-right" id="expand" onClick="fullscreenToggle();">
+    <span class="icon is-small">
+      <i class="fa fa-window-maximize" id="expander"></i>
+    </span>
+  </button>
+
+  <!-- Conteo de dispositivos  -->
+  <div class="box has-text-centered">
+    <nav class="level">
+      <div class="level-item">
+        <div>
+          <p class="heading" style="font-size: 1rem; color: rgb(255, 255, 0); ">Total de Dispositivos</p>
+          <p class="title has-text-yellow" id="total-hosts" style="font-size: 2rem;"></p>
+        </div>
+      </div>
+      <div class="level-item has-text-centered">
+        <div>
+          <p class="heading" style="font-size: 1rem; color: rgb(63, 248, 6);">Dispositivos En-Linea</p>
+          <p class="title has-text-success" id="available-hosts" style="font-size:2rem;"></p>
+        </div>
+      </div>
+      <div class="level-item has-text-centered">
+        <div>
+          <p class="heading" style="font-size: 1rem; color: rgb(255, 91, 91);">Dispositivos sin conexión</p>
+          <p class="title has-text-danger" id="unavailable-hosts" style="font-size:2rem;"></p>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Tabla de datos -->
+  <table class="table is-striped" id="ip-status"></table>
+
+  <style>
+    /* Tabla */
+    #ip-status td, #ip-status th {
+      text-align: center;
+      vertical-align: middle;
+    }
+    #ip-status { margin-left: auto; margin-right: auto; }
+
+    /* Controles superiores */
+    .top-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .top-controls select,
+    .top-controls input {
+      height: 28px;           
+      padding: 5px 10px;
+      font-size: 0.9rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .left-control {
+      text-align: left;
+    }
+
+    .center-control {
+      height: 18px;
+      text-align: center;
+    }
+
+    .right-control {
+      flex: 0 0 auto;
+      text-align: right;
+    }
+  </style>
+</section>
+
+<script>
+async function updateTable() {
+  await $.ajax({
+    url: '{{ url_for("api.get_all_hosts") }}',
+    type: 'GET',
+    success: function(response) {
+      var json_data = JSON.parse(response);
+
+      // 🔹 1️⃣ Guardar valor actual del filtro antes de destruir la tabla
+      var prevTipoFiltro = $('#tipo_filtro').val() || '';
+
+      if ($.fn.DataTable.isDataTable('#ip-status')) {
+        $('#ip-status').DataTable().destroy();
+      }
+
+      $('#ip-status').DataTable({
+        iDisplayLength: 50,
+        data: json_data,
+        columns: [
+          { data: "hostname", title: "Nombre" },
+          { data: "ip_address", title: "Dirección IP" },
+          { data: "ciudad", title: "Ciudad" },
+          { data: "cto", title: "Campamento" },
+          { data: "dispositivo", title: "Host" },
+          { data: "tipo", title: "Tipo Disp" },
+          { data: "last_poll", title: "Ultima Actualización" },
+          { data: "status", title: "Estado" },
+          { 
+            data: "id", title: "ICMP", render: function(data,type,row){
+              return `<button class="button is-small" title="Ping" style="background:transparent; border:none; "
+                onclick="forzarPing(${data},'${row.ip_address}')">
+                <img src="{{ url_for('static', filename='Iconos/ping1.ico') }}" style="width:28px; height:28px;" />
+              </button>`;
+            }
+          },
+          { data: null, title: "status_order", visible: false,
+            render: function(data,type,row){ return row.status==='Down'?0:1; }
+          }
+        ],
+        order: [[9,'asc'], [0,'asc']],
+        searching: true,
+        stateSave: true,
+        rowCallback: function(row,data,index){ 
+          var status_col = $(row).find('td:eq(7)');
+          var last_poll_col = $(row).find('td:eq(6)');
+
+          // Encabezados
+          $('#ip-status thead th').css({color:'white', backgroundColor:'#004aad', borderBottom:'2px solid #444'});
+
+          // Estado visual
+          status_col.empty();
+          if(data.status==='Down'){
+            status_col.append('<img src="/static/Iconos/down1.ico" alt="estado" width="28" height="28">');
+            $(row).addClass('has-background-danger has-text-white');
+          } else {
+            status_col.addClass('has-text-success');
+             status_col.append('<img src="/static/Iconos/up.ico" alt="estado" width="28" height="28">');
+          }
+
+          // Historial
+          if(!$(last_poll_col).has("span").length){
+            last_poll_col.append(`<span class="icon" style="cursor:pointer;margin-left:10px;"
+              onClick="loadPollHistory('${data.hostname}','${data.id}')">
+              <i class="fa fa-history"></i>
+            </span>`);
+          }
+        },
+        initComplete: function(){
+          var tableApi = this.api();
+
+          var column = tableApi.column(5);
+          var filtroSelect = $('<select id="tipo_filtro"></select>').append('<option value="">Todos</option>');
+          column.data().unique().sort().each(function(d){ if(d) filtroSelect.append('<option value="'+d.toLowerCase()+'">'+d+'</option>'); });
+
+          filtroSelect.on('change', function(){
+            var filtro = $(this).val();
+            if(filtro) column.search('^'+filtro+'$', true, false).draw();
+            else column.search('').draw();
+          });
+
+          var topControls = $('<div class="top-controls"></div>');
+          topControls.append($('<div class="left-control"></div>').append(filtroSelect));
+          topControls.append($('<div class="center-control"></div>').append($('#ip-status_filter')));
+          topControls.append($('<div class="right-control"></div>').append($('#ip-status_length')));
+
+          $('#ip-status_wrapper .dataTables_length, #ip-status_wrapper .dataTables_filter').remove();
+          $('#ip-status_wrapper').prepend(topControls);
+
+          $('#ip-status_filter input').attr('placeholder','Buscar...');
+
+          // 🔹 2️⃣ Restaurar valor del filtro anterior
+          if (prevTipoFiltro) {
+            $('#tipo_filtro').val(prevTipoFiltro).trigger('change');
+          }
+        }
+      });
+    }
+  });
+}
+
+
+async function updateHostCounts(){
+  await $.ajax({
+    url: '{{ url_for("api.get_host_counts") }}',
+    type:'GET',
+    success:function(response){
+      var json_data = JSON.parse(response);
+      $("#total-hosts").text(json_data.total_hosts);
+      $("#available-hosts").text(json_data.available_hosts);
+      $("#unavailable-hosts").text(json_data.unavailable_hosts);
+    }
+  });
+}
+
+async function loadPollHistory(hostname,id){
+  await modalClear();
+  await modalAddContent('Historial de Consultas', `<p class="title is-4">${hostname}</p>
+    <div class="table-container"><table class="table is-striped" id="modal-table" style="width:100%"></table></div>`);
+  await $.ajax({
+    url:'/pollHistory/'+id,
+    type:'GET',
+    success:function(response){
+      var json_data = JSON.parse(response);
+      $('#modal-table').DataTable({order:[[0,'desc']],data:json_data,columns:[
+        {data:"poll_time",title:"Tiempo de Consulta"},
+        {data:"poll_status",title:"Estado"}
+      ],paging:true});
+    }
+  });
+  await modalShow();
+}
+
+function fullscreenToggle(){
+  var section=$("#expand-me"),expander=$("#expander");
+  if(section.hasClass('fullscreen')){
+    section.removeClass('fullscreen');
+    expander.removeClass("fa fa-window-restore").addClass("fa fa-window-maximize");
+  }else{
+    section.addClass('fullscreen');
+    expander.removeClass("fa fa-window-maximize").addClass("fa fa-window-restore");
+  }
+}
+
+function forzarPing(hostId,ip){
+  $.ajax({
+    url:`/forzar_ping/${hostId}`,
+    type:'GET',
+    success:function(){ showToast(`✅ Ping exitoso a ${ip}`); updateTable(); },
+    error:function(xhr){ try{ const response = JSON.parse(xhr.responseText); showToast(response.message,true); }catch(e){ showToast(`❌ Error al hacer ping a ${ip}`,true);} }
+  });
+}
+
+function showToast(message,isError=false){
+  const toast=document.getElementById("toast"),msg=document.getElementById("toastMessage");
+  msg.textContent=message; toast.className="notification"; toast.classList.add(isError?"is-danger":"is-success");
+  toast.classList.remove("is-hidden"); setTimeout(()=>hideToast(),4000);
+}
+function hideToast(){document.getElementById("toast").classList.add("is-hidden");}
+
+const refreshInterval=parseInt("{{ refresh_interval|int }}");
+$(document).ready(function(){ updateTable(); updateHostCounts(); setInterval(updateTable,refreshInterval); setInterval(updateHostCounts,refreshInterval); });
+</script>
+
+{% endblock %}
+
+
+
+
+

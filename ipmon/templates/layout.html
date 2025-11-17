@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {% set theme = get_active_theme_path() %}
+    <link rel="stylesheet" type="text/css" href="{{ theme }}" />
+    <link rel="stylesheet" type="text/css" href="/static/css/datatables.css" />
+    <script type="text/javascript" src="/static/javascript/jquery.js"></script>
+    <script type="text/javascript" src="/static/javascript/datatables.js"></script>
+    <script type="text/javascript" defer src="/static/fontawesome/js/all.js"></script>
+
+    <title>Monitoreo Dispositivod de Red TLPG</title>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    
+            // Obtener todos los elementos con la clase "navbar-burger"
+            const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+    
+            // Verificar si hay elementos con la clase "navbar-burger"
+            if ($navbarBurgers.length > 0) {
+    
+                // Asignar un evento de clic a cada elemento
+                $navbarBurgers.forEach(el => {
+                    el.addEventListener('click', () => {
+    
+                        // Obtener el elemento objetivo a partir del atributo "data-target"
+                        const target = el.dataset.target;
+                        const $target = document.getElementById(target);
+    
+                        // Activar o desactivar la clase "is-active" en los elementos "navbar-burger" y "navbar-menu"
+                        el.classList.toggle('is-active');
+                        $target.classList.toggle('is-active');
+    
+                    });
+                });
+            }
+        });
+
+        // Mostrar indicador de carga
+        function showLoader() {
+            $("#main").addClass('is-hidden')
+            $("#loader").removeClass('is-hidden')
+        }
+    
+        // Funciones de control del modal
+        function modalClear() {
+            $("#modal-title").empty()
+            $("#modal-body").empty()
+            $("#modal-footer").empty()
+        }
+    
+        function modalShow() {
+            $("#modal-container").addClass('is-active');
+        }
+    
+        function modalAddContent(title, body, footer) {
+            $("#modal-title").append(title);
+            $("#modal-body").append(body);
+            $("#modal-footer").append(footer);
+        }
+    
+        function modalClose() {
+            $("#modal-container").removeClass('is-active');
+            modalClear();
+        }
+    
+        // Mostrar mensajes de notificación
+        function displayNotifications() {
+            $("#notifications").css({"display": "unset"})
+            window.setTimeout(function(){
+                $("#notifications").fadeOut(2000); 
+            }, 3000);
+            
+        }
+
+        function closeNotifications() {
+            $("#notifications").css({"display": "none"})
+        }
+
+        // Obtener Alerts
+        function getAlerts() {
+            
+        }
+
+        // Mostrar Alertas
+        async function displayAlerts() {
+            var title='Notificaciones de Dispositivos'
+            var body='<table id="alerts-table" class="table is-striped"></table>'
+            await modalClear();
+            await modalAddContent(title, body);
+
+            await $.ajax({
+                url: '{{ url_for("api.get_all_host_alerts") }}',
+                type: 'GET',
+                success: function (response) {
+                    var json_data = JSON.parse(response)
+                    var json = {
+                        "columns": [
+                            { "data": "hostname", "title": "Dispositivo" },
+                            { "data": "ip_address", "title": "Dirección Ip" },
+                            { "data": "poll_time", "title": "Fecha Consulta" },
+                            { "data": "host_status", "title": "Estado" }
+                        ],
+                        "data": json_data
+                    }
+
+                    if ($.fn.DataTable.isDataTable('#alerts-table')) {
+                        $('#alerts-table').DataTable().destroy();
+                    }
+
+                    var table = $('#alerts-table').DataTable({
+                        "order": [[2, "desc"]],
+                        data: json.data,
+                        columns: json.columns
+                    });
+                }
+            });
+            await modalShow();
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Notificaciones -->
+    <section class="hero-body notifications" id="notifications">
+        <div class="container has-text-centered">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="container">
+                    <button class="button is-pulled-right" style="cursor: pointer;" onclick="closeNotifications();">
+                        <span class="icon is-medium">
+                            <i class="fa fa-window-close"></i>
+                        </span>
+                    </button>
+                </div>
+                
+                <script>displayNotifications();</script>
+                {% for category, message in messages %}
+                <div class="notification is-{{category}}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+        </div>
+    </section>
+
+    <!-- Cabecera -->
+    <section class="hero is-primary is-medium">
+        <div class="hero-head">
+            <nav class="navbar">
+                <div class="container is-flex is-justify-content-flex-end">
+                     <!-- Sección izquierda -->
+                    <div class="navbar-brand">
+                        <a href="{{ url_for('main.index') }}" class="navbar-item is-size-4 has-text-blue">
+                        <i class="fas fa-network-wired"></i>&nbsp;Monitoreo Redes - Dispositivos de Red
+                        </a>
+                        <span class="navbar-burger burger" data-target="navbarMenuHeroA">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </span>
+                    </div>
+                    
+                    <!-- LOGO CENTRADO ABSOLUTAMENTE -->
+                    <div>
+                         <img src="{{ url_for('static', filename='images/mon1.png') }}" alt="Centro de Monitoreo" width="500"  style="height: 74px;">
+                    </div>   
+
+                     <!-- Sección derecha -->
+                    <div id="navbarMenuHeroA" class="navbar-menu is-flex is-justify-content-flex-end">
+                        {% if database_configured() %}
+                        <div class="navbar-end is-flex is-align-items-center">
+                            {% if current_user.is_authenticated %}
+                            <div class="navbar-item has-dropdown is-hoverable">
+                                <a class="navbar-link">Dispositivos</a>
+                                <div class="navbar-dropdown">
+                                    <a href="{{ url_for('hosts.add_hosts') }}" class="navbar-item">Añadir Dispositivos</a>
+                                    <a href="{{ url_for('hosts.update_hosts') }}" class="navbar-item">Editar Dispositivos</a>
+                                    <a href="{{ url_for('imagenes.listar_hosts') }}" class="navbar-item">Imagenes Dispositivos</a>
+                                </div>
+                            </div>
+
+                            <div class="navbar-item has-dropdown is-hoverable">
+                                <a class="navbar-link">Configuración</a>
+                                <div class="navbar-dropdown">
+                                    <a href="{{ url_for('main.configure_polling') }}" class="navbar-item">Intervalo</a>
+                                    <a href="{{ url_for('smtp.configure_smtp') }}" class="navbar-item">SMTP</a>
+                                    <a href="{{ url_for('telegram.config_telegram') }}" class="navbar-item">Telegram</a>  
+                                    <a href="{{ url_for('main.configuracion_general') }}" class="navbar-item">Configuración</a>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <a class="navbar-item" onClick="displayAlerts();">
+                                <i class="fas fa-exclamation-triangle"></i>&nbsp;&nbsp;Alertas
+                            </a>
+
+                            {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('main.account') }}" class="navbar-item">
+                                <i class="fas fa-user"></i>&nbsp;&nbsp;{{ current_user.id }}
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="navbar-item">
+                                <i class="fas fa-user"></i>&nbsp;&nbsp;Iniciar Sesión
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </section>
+
+
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns">
+                    <!-- Loader, displayed if main_content is doing something -->
+                    <div class="column is-hidden" id="loader">
+                        <section class="hero-body">
+                            <div class="container">
+                                <progress class="progress is-large is-info" max="100"></progress>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="column" id="main">
+                        <!-- Notifications -->
+                        {% block content %}
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pie de Pagina -->
+    <footer class="footer is-fixed-bottom">
+        <div class="content has-text-centered">
+            <p>
+                <strong>El presente software de monitoreo ha sido desarrollado por el equipo de TLPG y está destinado únicamente al uso del personal encargado del monitoreo de redes LAN. </strong> 
+            </p>
+
+                <a href="https://github.com/MonitoreoLAN" target="_blank">
+                    <img src="/static/images/mon.png" alt="Made with Bulma" width="180" height="54">
+                </a>
+
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div class="modal" id="modal-container">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title" id="modal-title">
+                    <!-- Title -->
+                </p>
+                <button class="delete" aria-label="close" onclick="modalClose();"></button>
+            </header>
+            <section class="modal-card-body" id="modal-body">
+                <!-- Body -->
+            </section>
+            <footer class="modal-card-foot" id="modal-footer">
+                <!-- Footer -->
+            </footer>
+        </div>
+    </div>
+
+    <!-- Notificaciones de ping -->
+    <div id="toast" class="notification is-hidden" style="position: fixed; bottom: 1rem; right: 1rem; z-index: 9999;">
+        <button class="delete" onclick="hideToast()"></button>
+        <span id="toastMessage">Mensaje aquí</span>
+    </div>
+</body>
+
+</html>

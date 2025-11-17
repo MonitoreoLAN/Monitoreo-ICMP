@@ -1,0 +1,57 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv/
+.Python
+
+# Flask cache / instance folders
+instance/
+*.db
+*.sqlite3
+
+# VS Code
+.vscode/
+
+# Mac OS
+.DS_Store
+
+# Log files
+*.log
+
+# Python-specific
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Pytest
+.cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node modules (if any frontend build)
+node_modules/
+
+# dotenv files (sensitive info)
+.env
+.env.*
+
+# Coverage
+htmlcov/
+.coverage
+coverage.xml
+
+# MyPy
+.mypy_cache/
+.dmypy.json

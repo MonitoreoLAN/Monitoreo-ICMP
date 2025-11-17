@@ -1,0 +1,245 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="hero-body">
+  {% if hosts %}
+    <!-- Controles superiores pegados -->
+    <div class="top-controls">
+      <!-- Filtro a la izquierda -->
+      <div class="left-control">
+        <div class="select">
+          <select id="tipo_filtro">
+            <option value="">Todos</option>
+            {% for t in tipos %}
+              <option value="{{ t|lower }}">{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Barra de búsqueda centrada -->
+      <div class="center-control">
+        <div id="custom-search"></div>
+      </div>
+
+      <!-- Selector de cantidad de filas a la derecha -->
+      <div class="right-control">
+        <div id="custom-length"></div>
+      </div>
+    </div>
+
+    <!-- Tabla de hosts -->
+    <div class="table-container">
+      <table class="table is-striped" id="hosts_table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Dirección IP</th>
+            <th>Ciudad</th>
+            <th>Campamento</th>
+            <th>Tipo</th>
+            <th>Imagen</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for host in hosts %}
+          <tr>
+            <td>{{ host.hostname }}</td>
+            <td>{{ host.ip_address }}</td>
+            <td>{{ host.ciudad }}</td>
+            <td>{{ host.cto }}</td>
+            <td>{{ host.tipo }}</td>
+            <td>
+              {% if host.images %}
+                <img src="{{ url_for('static', filename=host.images[0].file_path) }}" 
+                     class="zoomable" 
+                     data-src="{{ url_for('static', filename=host.images[0].file_path) }}" 
+                     onclick="openImageModal(this.dataset.src)"
+                     style="max-width:100px; cursor:pointer;" 
+                     title="Click para ampliar">
+              {% else %}
+                No hay imagen
+              {% endif %}
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+              <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
+                <!-- Subir Imagen -->
+                <form action="{{ url_for('imagenes.subir_imagen', host_id=host.id) }}" 
+                      method="POST" enctype="multipart/form-data" style="display:inline;">
+                  <label title="Subir Imagen" style="cursor:pointer;">
+                    <img src="{{ url_for('static', filename='Iconos/subir2.ico') }}" 
+                        style="width:26px; height:26px;" />
+                    <input type="file" name="imagen" accept="image/*" 
+                          style="display:none;" onchange="this.form.submit();">
+                  </label>
+                </form>
+
+
+
+                <!-- Captura RTSP (solo si existe snaprurl) -->
+                {% if host.snapshot_url %}
+                <form action="{{ url_for('imagenes.capturar_imagen', host_id=host.id) }}" method="POST">
+                  <button type="submit" class="button is-text" title="Captura RTSP">
+                    <img src="{{ url_for('static', filename='Iconos/rtsp2.ico') }}" style="width:26px; height:26px;" />
+                  </button>
+                </form>
+                {% endif %}
+
+                <!-- Eliminar Imagen -->
+                <form action="{{ url_for('imagenes.eliminar_imagen', host_id=host.id) }}" method="POST">
+                  <button type="submit" class="button is-text" title="Eliminar">
+                    <img src="{{ url_for('static', filename='Iconos/eliminar1.ico') }}" style="width:26px; height:26px;" />
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>No hay hosts registrados.</p>
+  {% endif %}
+</section>
+
+<!-- Modal para imagen -->
+<div id="imageModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+      background: rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000;">
+    <span style="position:absolute; top:10px; right:20px; color:white; font-size:30px; cursor:pointer;" 
+          onclick="closeImageModal()">&times;</span>
+    <img id="modalImage" src="" style="max-width:90%; max-height:90%;">
+</div>
+
+<style>
+  /* Tabla centrada */
+  #hosts_table { margin: 0; }
+  #hosts_table td, #hosts_table th { text-align: center; vertical-align: middle; }
+  #hosts_table th { background-color: #004aad; color: white; }
+
+  /* Controles superiores pegados y responsive */
+  .top-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 5px; 
+    gap: 2px;
+  }
+
+  .left-control select,
+  .center-control input,
+  .right-control select {
+    height: 28px;
+    padding: 2px 6px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    border: 1px solid #16b907;
+    box-sizing: border-box;
+  }
+
+  .center-control {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Zoom al pasar mouse */
+  .zoomable {
+      transition: transform 0.3s ease;
+  }
+  .zoomable:hover {
+      transform: scale(2);
+      z-index: 10;
+      position: relative;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .top-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .center-control, .left-control, .right-control {
+      justify-content: flex-start;
+      margin-bottom: 5px;
+    }
+    .center-control input {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+$(document).ready(function () {
+    // Ordenación personalizada para la columna 4
+    $.fn.dataTable.ext.order['camara-safecity-first'] = function (settings, col) {
+        return this.api().column(col, {order:'index'}).nodes().map(function (td) {
+            let text = $(td).text().trim();
+            if (text === 'Camara') return '0';
+            if (text === 'SafeCity') return '1';
+            if (text === 'NVR') return '2';
+            return '2-' + text.toLowerCase();
+        });
+    };
+
+    // Inicializar DataTable
+    var table = $('#hosts_table').DataTable({
+        "pageLength": 50,
+        "lengthChange": true,
+        "order": [[5, "asc"], [4, "asc"]],
+        columnDefs: [
+            { targets: 4, orderDataType: 'camara-safecity-first' }
+        ]
+    });
+
+    // Mover controles de DataTable a nuestros contenedores
+    $("#custom-search").append($('#hosts_table_filter'));
+    $("#custom-length").append($('#hosts_table_length'));
+
+    // Placeholder de búsqueda
+    $('#hosts_table_filter input').attr('placeholder','Buscar...');
+
+    // Filtro de tipo
+    $('#tipo_filtro').on('change', function () {
+        var filtro = $(this).val();
+        table.column(4).search(filtro ? '^'+filtro+'$' : '', true, false).draw();
+    });
+});
+
+// --- MODAL DE IMAGEN ---
+
+// Abrir modal al hacer doble clic
+function openImageModal(src) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    modalImg.src = src;
+    modal.style.display = 'flex';
+
+    // Evitar que el clic en la imagen cierre el modal inmediatamente
+    modalImg.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+}
+
+// Cerrar modal al hacer clic en cualquier parte
+document.getElementById('imageModal').addEventListener('click', function() {
+    closeImageModal();
+});
+
+// Función cerrar
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+}
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+

@@ -1,0 +1,200 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="has-text-centered">
+        <p class="title is-3 has-text-centered" 
+            style="color: rgb(255, 255, 255) ; ">
+            🛠️ Configuración SMTP 📧</p>
+    </div>
+      <!-- FILA SUPERIOR -->
+    <div class="columns">
+        <!-- Configuración actual SMTP -->
+        <div class="column">
+            <div id="smtp-current" class="box">
+                <div class="has-text-centered">
+                    <p class="title is-4 has-text-centered has-text-weight-bold" 
+                    style="color: rgb(255, 255, 0) ; ">Datos Servidor SMTP</p>
+                </div><br>
+                
+                <style>
+                table.table th {
+                    color: rgb(202, 173, 7) !important;
+                }
+                </style>
+
+                <div class="columns">
+                    <!-- Columna Servidor SMTP -->
+                    <div class="column">
+                        {% if smtp['smtp_server'] or smtp['smtp_port'] or smtp['smtp_user'] or smtp['smtp_password'] %}
+                        <table class="table is-striped is-fullwidth">
+                            <tr>
+                                <th>SMTP Server</th>
+                                <td>{{ smtp['smtp_server'] }}</td>
+                            </tr>
+                            <tr>
+                                <th>SMTP Port</th>
+                                <td>{{ smtp['smtp_port'] }}</td>
+                            </tr>
+                        </table>
+                        {% else %}
+                        <p class="has-text-centered has-text-weight-bold" style="color: whitesmoke;">No hay configuración del servidor SMTP</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Columna Destinatarios -->
+                    <div class="column">
+                        {% if smtp['smtp_sender1'] or smtp['smtp_sender2'] %}
+                        <table class="table is-striped is-fullwidth">
+                            <tr>
+                                <th>Destinatario</th>
+                                <td>{{ smtp['smtp_sender1'] }}</td>
+                            </tr>
+                            <tr>
+                                <th>Destinatario</th>
+                                <td>{{ smtp['smtp_sender2'] }}</td>
+                            </tr>
+                        </table>
+                        {% else %}
+                        <p class="has-text-centered has-text-weight-bold" style="color: rgb(30, 158, 197);">No hay destinatarios configurados</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="has-text-centered mt-3">
+                    <form method="POST" action="{{ url_for('smtp.configure_smtp') }}" style="display: inline-block; margin: 0 1em;">
+                        <input type="hidden" name="action" value="delete_server">
+                        <button type="submit" class="button is-danger">Eliminar Servidor SMTP</button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('smtp.configure_smtp') }}" style="display: inline-block; margin: 0 1em;">
+                        <input type="hidden" name="action" value="delete_recipients">
+                        <button type="submit" class="button is-warning">Eliminar Destinatarios</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verificación SMTP -->
+        <div class="column">
+            <div class="box">
+                <div class="has-text-centered">
+                    <p class="title is-4 has-text-centered has-text-weight-bold" 
+                    style="color: rgb(255, 255, 0);">Verificación conexión SMTP</p>  
+                </div><br>
+                <form method="POST" action="{{ url_for('smtp.smtp_test') }}" onsubmit="showLoader();">
+                    <div class="field has-text-centered">
+                        <label class="label has-text-left" style="color: #00ddff; display: block; width: 70%; margin: 0 auto 5px auto;">
+                            Correo del destinatario
+                        </label>
+                        <div class="control is-inline-block" style="width: 70%;">
+                            <input class="input is-medium" type="email" name="recipient" required>
+                        </div>
+                    </div>
+                    <div class="field has-text-centered mt-4">
+                        {% if smtp['smtp_server'] and smtp['smtp_port'] and smtp['smtp_user'] or smtp['smtp_password'] %}
+                        <button class="button is-success is-medium">Verificar</button>
+                        {% else %}
+                        <button class="button is-success is-medium" disabled>Verificar</button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+  <!-- FILA INFERIOR -->
+    <div class="box mt-4">
+        <div class="has-text-centered">
+            <p class="title is-3 has-text-centered" 
+                style="color: rgb(255, 255, ) ; ">
+                📧 Actualizar configuración SMTP 🛠️</p>
+        </div><br>
+        <div class="columns">
+         <!-- Datos servidor SMTP -->
+            <div class="column">
+                <div class="has-text-centered">
+                    <p class="title is-4 has-text-centered has-text-weight-bold" 
+                    style="color: rgb(255, 255, 0) ; ">Datos servidor SMTP</p>   
+                </div>
+                <form method="POST" action="{{ url_for('smtp.configure_smtp') }}" novalidate>
+                {{ form.hidden_tag() }}
+
+                 <!-- División interna: servidor/puerto a la izquierda, usuario/contraseña a la derecha -->
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                {{ form.server.label(class_="label", style="color: #00ddff;") }}
+                                {{ form.server(class_="input is-medium", id="smtp-server") }}
+                            </div>
+
+                            <div class="field">
+                                {{ form.port.label(class_="label", style="color: #00ddff;") }}
+                                {{ form.port(class_="input is-medium", id="smtp-port") }}
+                            </div>
+                        </div>
+
+                        <div class="column">
+                            <div class="field">
+                                {{ form.user.label(class_="label", style="color: #00ddff;") }}
+                                {{ form.user(class_="input is-medium", id="smtp-user") }}
+                            </div>
+
+                            <div class="field">
+                                {{ form.password.label(class_="label", style="color: #00ddff;") }}
+                                {{ form.password(class_="input is-medium", id="smtp-password") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field has-text-centered mt-4">
+                        <button type="submit" class="button is-success is-medium" name="action" value="update_server">
+                        Actualizar Configuración SMTP
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Destinatarios -->
+            <div class="column">
+                <div class="has-text-centered">
+                    <p class="title is-4 has-text-centered has-text-weight-bold" 
+                    style="color: rgb(255, 255, 0) ; ">Destinatarios</p>    
+                </div>
+            
+                <form method="POST" action="{{ url_for('smtp.configure_smtp') }}">
+                {{ form.hidden_tag() }}
+                    <div class="field has-text-centered">
+                        {{ form.sender1.label(class_="label has-text-left", style="color: #00ddff; display: block; width: 450px; margin: 0 auto 5px auto;") }}
+                        {{ form.sender1(class_="input is-medium is-inline-block", id="smtp-sender1", style="max-width: 450px;") }}
+                    </div>
+
+                    <div class="field has-text-centered">
+                        {{ form.sender2.label(class_="label has-text-left", style="color: #00ddff; display: block; width: 450px; margin: 0 auto 5px auto;") }}
+                        {{ form.sender2(class_="input is-medium", id="smtp-sender2", style="max-width: 450px;") }}
+                    </div>
+
+                    <div class="field has-text-centered mt-4">
+                        <button type="submit" class="button is- is-success is-medium" name="action" value="update_recipients">
+                        Actualizar Destinatarios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+  $(document).ready(function () {
+    $("#smtp-server").attr("placeholder", "{{ smtp['smtp_server'] }}")
+    $("#smtp-port").attr("placeholder", "{{ smtp['smtp_port'] }}")
+    $("#smtp-user").attr("placeholder", "{{ smtp['smtp_user'] }}")
+    $("#smtp-sender1").attr("placeholder", "{{ smtp['smtp_sender1'] }}")
+    $("#smtp-sender2").attr("placeholder", "{{ smtp['smtp_sender2'] }}")
+  })
+</script>
+
+{% endblock %}
+

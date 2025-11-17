@@ -1,0 +1,273 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="hero-body">
+  {% if hosts %}
+    <!-- Controles superiores pegados -->
+    <div class="top-controls">
+      <!-- Filtro a la izquierda -->
+      <div class="left-control">
+        <div class="select">
+          <select id="tipo_filtro">
+            <option value="">Todos</option>
+            {% for t in tipos %}
+              <option value="{{ t|lower }}">{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Barra de búsqueda centrada -->
+      <div class="center-control">
+        <div id="custom-search"></div>
+      </div>
+      
+      <!-- Botón eliminar Todos -->
+      <div class="right-control">
+        <button class="button is-small" 
+        style="background: transparent; border: none; box-shadow: none; color: #ff0000;"  onclick="deleteAllHostsModal()">
+          <img src="{{ url_for('static', filename='Iconos/eliminar.ico') }}" style="width:18px; height:18px; margin-right:5px;">
+          Eliminar TODO!
+        </button>
+      </div>
+
+      <!-- Botón eliminar visibles -->
+      <div class="right-control">
+        <button class="button is-small" 
+        style="background: transparent; border: none; box-shadow: none; color: #fae105;"  onclick="deleteVisibleHostsModal()">
+          <img src="{{ url_for('static', filename='Iconos/eliminar1.ico') }}" style="width:18px; height:18px; margin-right:5px;">
+          Eliminar Dispositivos Seleccionados
+        </button>
+      </div>
+
+    
+      <!-- Selector de cantidad de filas a la derecha -->
+      <div class="right-control">
+        <div id="custom-length"></div>
+      </div>
+    </div>
+
+    <!-- Tabla de hosts -->
+    <div class="table-container">
+        <table class="table is-striped" id="hosts_table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Dirección IP</th>
+                    <th>Ciudad</th>
+                    <th>Campamento</th>
+                    <th>Host</th>
+                    <th>Tipo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for host in hosts %}
+                <tr>
+                    <td>{{ host.hostname }}</td>
+                    <td>{{ host.ip_address }}</td>
+                    <td>{{ host.ciudad }}</td>
+                    <td>{{ host.cto }}</td>
+                    <td>{{ host.dispositivo }}</td>
+                    <td>{{ host.tipo }}</td>
+                    <td style="text-align: center; vertical-align: middle;">
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+                            <span class="icon has-text-info" style="cursor: pointer;"
+                                data-host='{{ host | tojson | e }}'
+                                onclick="updateHostModal(JSON.parse(this.dataset.host))">
+                            <img src="{{ url_for('static', filename='Iconos/editar2.ico') }}" style="width:28px; height:28px;" title="Editar" />
+                            </span>
+
+                            <span class="icon has-text-danger delete-btn" style="cursor: pointer;"
+                                data-host='{{ host | tojson | e }}'
+                                onclick="deleteHostModal(JSON.parse(this.dataset.host))">
+                            <img src="{{ url_for('static', filename='Iconos/eliminar4.ico') }}" style="width:28px; height:28px;" title="Eliminar" />
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+  {% else %}
+    <p>No hay hosts registrados.</p>
+  {% endif %}
+</section>
+
+<style>
+  /* Tabla centrada */
+  #hosts_table { margin: 0; }
+  #hosts_table td, #hosts_table th { text-align: center; vertical-align: middle; }
+  #hosts_table th { background-color: #004aad; color: white; }
+
+  /* Controles superiores pegados y responsive */
+  .top-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 5px; /* pegado a la tabla */
+    gap: 5px;
+  }
+
+  .left-control select,
+  .center-control input,
+  .right-control select {
+    height: 28px;
+    padding: 2px 6px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    border: 1px solid #16b907;
+    box-sizing: border-box;
+  }
+
+  .center-control {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Responsive: controles apilados en móviles */
+  @media (max-width: 768px) {
+    .top-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .center-control, .left-control, .right-control {
+      justify-content: flex-start;
+      margin-bottom: 5px;
+    }
+
+    .center-control input {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+$(document).ready(function () {
+    // Inicializar DataTable
+    var table = $('#hosts_table').DataTable({
+        "pageLength": 50,
+        "lengthChange": true,
+        "order": [[1, "asc"]] // ordenar por nombre del dispositivo
+    });
+
+    // Mover controles de DataTable a nuestros contenedores
+    $("#custom-search").append($('#hosts_table_filter'));
+    $("#custom-length").append($('#hosts_table_length'));
+
+    // Placeholder de búsqueda
+    $('#hosts_table_filter input').attr('placeholder','Buscar...');
+
+    // Filtro de tipo
+    $('#tipo_filtro').on('change', function () {
+        var filtro = $(this).val();
+        table.column(5).search(filtro ? '^'+filtro+'$' : '', true, false).draw();
+    });
+});
+
+// Modal para actualizar host
+async function updateHostModal(host) {
+        var yc = ''
+        var nc = ''
+        if (host.alerts_enabled == true) {
+            yc = 'checked'
+        } else {
+            nc = 'checked'
+        }
+        var idFieldHidden = '<div class="field is-hidden"><input class="input is-medium" type="text" name="id" value="' + host.id + '"></div>'
+        var hostnameField = '<div class="field"><label class="label">Nom del Dispositivo</label><div class="control"><input class="input is-medium" type="text" name="hostname" placeholder=" ' + host.hostname + '"></div></div>'
+        var ipField = '<div class="field"><label class="label">Dirección IP</label><div class="control"><input class="input is-medium" type="text" name="ip_address" placeholder=" ' + host.ip_address + '"></div></div>'
+        var snapshotField = '<div class="field"><label class="label">Snapshot URL</label><div class="control"><input class="input is-medium" type="text" name="snapshot_url" placeholder="' + host.snapshot_url + '"></div></div>'
+        var ciudadField = '<div class="field"><label class="label">Ciudad</label><div class="control"><input class="input is-medium" type="text" name="ciudad" placeholder=" ' + host.ciudad + '"></div></div>'
+        var ctoField = '<div class="field"><label class="label">Campamento</label><div class="control"><input class="input is-medium" type="text" name="cto" placeholder=" ' + host.cto + '"></div></div>'
+        var dispositivoField = '<div class="field"><label class="label">Dispositivo</label><div class="control"><input class="input is-medium" type="text" name="dispositivo" placeholder=" ' + host.dispositivo + '"></div></div>'
+        var tipoField = '<div class="field"><label class="label">Tipo de Dispositivo</label><div class="control"><input class="input is-medium" type="text" name="tipo" placeholder=" ' + host.tipo + '"></div></div>'
+        var alertsField = '<div class="field"><label class="label">Habilitar Alertas</label><div class="control"><label class="radio"><input type="radio" name="alerts" value="True"' + yc + '> Yes</label><label class="radio"><input type="radio" name="alerts" value="False" ' + nc +'> No</label></div></div>'
+        var submitButton = '<div class="control"><button class="button is-block is-info is-medium">Actualizar</button></div>'
+        await modalClear();
+        await modalAddContent('Actualizar Información', '<div class="container"><div class="overlay" id="notification"></div></div><div class="table-container"><form method="POST" action="/updateHosts">' + idFieldHidden + hostnameField + ipField + snapshotField + ciudadField + ctoField + tipoField + dispositivoField + alertsField + submitButton + '</form></div>');
+        await modalShow();
+    }
+        // Modal para eliminar host
+        // Enviar el formulario en este modal elimina el host
+    async function deleteHostModal(host) {
+        var idFieldHidden = '<div class="field is-hidden"><input class="input is-medium" type="text" name="id" value="' + host.id + '"></div>'
+        var hostnameFieldHidden = '<div class="field is-hidden"><input class="input is-medium" type="text" name="hostname" value="' + host.hostname + '"></div>'
+        var confirmDelete = '<p class="title is-5">Eliminar dispositivo ' + host.hostname + '?</p>'
+        var deleteButton = '<div class="control"><button class="button is-danger is-info is-medium">Eliminar</button></div>'
+        await modalClear();
+        await modalAddContent('Eliminar', '<div class="container"><div class="overlay" id="notification"></div></div><div class="table-container"><form method="POST" action="/deleteHost">' + confirmDelete + idFieldHidden + hostnameFieldHidden  + deleteButton + '</form></div>');
+        await modalShow();
+    }
+
+// Modal para eliminar SOLO hosts visibles (según filtro de DataTable)
+async function deleteVisibleHostsModal() {
+    var table = $('#hosts_table').DataTable();
+
+    // Obtener hosts visibles (después del filtro)
+    var visibleData = table.rows({ search: 'applied' }).data();
+
+    if (visibleData.length === 0) {
+        alert("⚠️ No hay hosts visibles para eliminar.");
+        return;
+    }
+
+    // Extraer IDs de los hosts visibles
+    var ids = [];
+    $('#hosts_table tbody tr:visible').each(function () {
+        var dataHost = $(this).find('.delete-btn').data('host');
+        if (dataHost && dataHost.id) {
+            ids.push(dataHost.id);
+        }
+    });
+
+    var confirmDelete = '<p class="title is-5">⚠️ ¿Eliminar ' + ids.length + ' dispositivos seleccionados?</p>';
+    var hiddenField = '<input type="hidden" name="ids" value="' + JSON.stringify(ids) + '">';
+    var deleteButton = '<div class="control"><button class="button is-danger is-medium">Eliminar</button></div>';
+
+    await modalClear();
+    await modalAddContent('Eliminar Hosts Visibles',
+        '<div class="container"><div class="overlay" id="notification"></div></div>' +
+        '<div class="table-container">' +
+        '<form method="POST" action="/deleteVisibleHosts">' +
+        confirmDelete + hiddenField + deleteButton +
+        '</form></div>'
+    );
+    await modalShow();
+}
+
+// Modal para eliminar TODOS los hosts
+async function deleteAllHostsModal() {
+    var table = $('#hosts_table').DataTable();
+
+    // Contar todos los hosts en la tabla
+    var totalHosts = table.rows().data().length;
+
+    if (totalHosts === 0) {
+        alert("⚠️ No hay hosts para eliminar.");
+        return;
+    }
+
+    // Confirmación
+    var confirmDelete = '<p class="title is-5">⚠️ Esto eliminará TODOS los ' + totalHosts + ' hosts. ¿Estás seguro?</p>';
+    var deleteButton = '<div class="control"><button class="button is-danger is-medium">Eliminar Todos</button></div>';
+
+    await modalClear();
+    await modalAddContent('Eliminar Todos los Hosts',
+        '<div class="container"><div class="overlay" id="notification"></div></div>' +
+        '<div class="table-container">' +
+        '<form method="POST" action="/deleteAllHosts">' +
+        confirmDelete + deleteButton +
+        '</form></div>'
+    );
+    await modalShow();
+}
+
+
+</script>
+{% endblock %}
+

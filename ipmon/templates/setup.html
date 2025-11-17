@@ -1,0 +1,175 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<!-- HERO PRINCIPAL -->
+<section class="hero is-info is-small">
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <h1 class="title is-2">Configuración del Sistema de Monitoreo</h1>
+        </div>   
+    </div>
+</section>
+
+<!-- FORMULARIO UNIFICADO -->
+<form method="POST" action="{{ url_for('setup.setup') }}" onsubmit="showLoader();" novalidate>
+  {{ form.hidden_tag() }}
+
+    <div class="columns is-variable is-6 px-5 mt-4">
+        <!-- COLUMNA IZQUIERDA -->
+        <div class="column is-half">
+            <div class="box">
+                <div class="has-text-centered">
+                    <p class="title is-4 has-text-centered has-text-weight-bold"
+                        style="color: rgb(255, 255, 255); background-color: rgb(43, 228, 74); padding: 10px; border-radius: 8px; display: inline-block;">
+                        Parametros Necesarios
+                    </p><br>
+                </div>  
+                <p class="title is-4 has-text-left" style="color: rgb(255, 255, 0);">Cuenta de Administrador</p>
+                <p class="subtitle is-6 has-text-grey-light">
+                La cuenta de administrador posee privilegios para agregar y administrar dispositivos, definir parámetros, entre otras funciones.
+                </p>
+
+                <div class="field">
+                    <div class="control">
+                        {{ form.username.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.username(class_="input is-medium") }}
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        {{ form.email.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.email(class_="input is-medium") }}
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        {{ form.password.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.password(class_="input is-medium") }}
+                    </div>
+                    <p class="help">{{ form.password.description }}</p>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        {{ form.verify_password.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.verify_password(class_="input is-medium") }}
+                    </div>
+                    <p class="help">{{ form.password.description }}</p>
+                </div><br>
+
+                <!-- CONFIGURACIÓN CONSULTAS -->
+                <p class="title is-4 has-text-left" style="color: rgb(255, 255, 0);">Configuración de Consultas</p>
+                <p class="subtitle is-6 has-text-grey-light">
+                Define los intervalos y parámetros del sondeo de dispositivos.
+                </p>
+
+                <div class="field">
+                    <div class="control">
+                        {{ form.poll_interval.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.poll_interval(class_="input is-medium", id="polling-interval") }}
+                        <p class="help">Frecuencia de consulta (en segundos).</p>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        {{ form.retention_days.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.retention_days(class_="input is-medium", id="history-retention") }}
+                        <p class="help">Período de retención (en días).</p>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        {{ form.stable_cycles.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.stable_cycles(class_="input is-medium", id="stable-cycles") }}
+                        <p class="help">Número de ciclos de validación necesarios.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA -->
+        <div class="column is-half">
+            <div class="box">
+                <div class="has-text-centered">
+                    <p class="title is-4 has-text-centered has-text-weight-bold"
+                        style="color: rgb(255, 255, 255); background-color: rgb(167, 181, 182); padding: 10px; border-radius: 8px; display: inline-block;">
+                        Parametros Opcionales
+                    </p>
+                </div><br>
+                <p class="title is-4 has-text-left" style="color: rgb(255, 255, 0);">Configuración SMTP</p>
+                <p class="subtitle is-6 has-text-grey-light">
+                Si SMTP está configurado, las alertas se enviarán a los correos electrónicos registrados cuando los hosts cambien de estado.
+                </p>
+                <div class="field">
+                    <div class="control">
+                        {{ form.smtp_server.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.smtp_server(class_="input is-medium", id="smtp-server") }}
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        {{ form.smtp_port.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.smtp_port(class_="input is-medium", id="smtp-port") }}
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        {{ form.smtp_user.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.smtp_user(class_="input is-medium", id="smtp-user") }}
+                        <p class="help">Correo electronico del servidor SMTP.</p>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        {{ form.smtp_password.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.smtp_password(class_="input is-medium", id="smtp-password") }}
+                        <p class="help">Contraseña de Aplicaciones del servidor SMTP.</p>
+                    </div>
+                </div><br>
+
+                <p class="title is-4 has-text-left" style="color: rgb(255, 255, 0);">Remitentes</p>
+                <p class="subtitle is-6 has-text-grey-light">
+                Indique el correo electrónico y la configuración de Telegram.
+                </p>
+                <div class="field">
+                    <div class="control">
+                        {{ form.smtp_sender1.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.smtp_sender1(class_="input is-medium", id="smtp-sender1") }}
+                        <p class="help">E-mail destinatario 1.</p>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        {{ form.telegram_token.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.telegram_token(class_="input is-medium", id="telegram-token") }}
+                        <p class="help">Número de ciclos consecutivos en los que un host ha permanecido con el mismo estado (Up o Down).</p>
+                    </div>
+                </div>
+
+                                <div class="field">
+                    <div class="control">
+                        {{ form.telegram_chat_id.label(class_="label", style="color: #00ddff;") }}
+                        {{ form.telegram_chat_id(class_="input is-medium", id="telegram-chat-id") }}
+                        <p class="help">Chat ID de Telegram.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTÓN ENVIO -->
+    <div class="has-text-centered mt-5 mb-6">
+        {{ form.submit(class_="button is-success is-medium is-rounded px-6", value="Guardar Configuración del Sistema") }}
+    </div>
+</form>
+
+{% endblock %}

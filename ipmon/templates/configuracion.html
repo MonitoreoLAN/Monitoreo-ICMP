@@ -1,0 +1,135 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-2">
+    <h1 class="title has-text-centered">🖥️ Configuración General del Sistema 🖥️</h1>
+    <div class="columns">
+                <!-- ======================= -->
+        <!-- SECCIÓN: Scheduler -->
+        <!-- ======================= -->
+        <div class="column">
+            <div class="has-text-centered">
+                <p class="title is-4 has-text-centered has-text-weight-bold" 
+                style="color: rgb(255, 255, 0);">🕒 Configuración de la ejecución de programas</p>   
+            </div>
+            <div class="box">
+                <form method="POST" action="{{ url_for('main.configuracion_general') }}">
+                    <input type="hidden" name="form_type" value="scheduler">
+
+                    <!-- Sección superior: activar, frecuencia y hora -->
+                    <div class="columns is-vcentered">
+                        <div class="column">
+                            <div class="field">
+                                <label class="checkbox">
+                                <input type="checkbox" name="enabled" {% if config and config.enabled %}checked{% endif %}>
+                                Activar Scheduler
+                                </label>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Frecuencia</label>
+                                <div class="select">
+                                    <select name="frequency" id="frequency">
+                                        <option value="daily" {% if config.frequency == 'daily' %}selected{% endif %}>Diario</option>
+                                        <option value="weekly" {% if config.frequency == 'weekly' %}selected{% endif %}>Semanal</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Hora</label>
+                                <div class="control is-inline-block" style="width: 80%;">
+                                    <input class="input" type="time" name="time" value="{{ config.time if config else '09:00' }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Días de la semana (solo si semanal) -->
+                    <div class="field" id="weekdays-container" >
+                        <label class="label">Días de la semana</label>
+                        <div class="control">
+                            {% set dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'] %}
+                            {% set selected = (config.weekdays.split(',') if config and config.weekdays else []) %}
+                            {% for d in dias %}
+                            <label class="checkbox mr-3">
+                                <input type="checkbox" name="weekdays" value="{{ d }}" {% if d in selected %}checked{% endif %}>
+                                {{ d }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Botón centrado -->
+                    <div class="has-text-centered mt-4">
+                        <button type="submit" class="button is-success">Guardar Scheduler</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="column">
+            <div class="has-text-centered">
+                <p class="title is-4 has-text-centered has-text-weight-bold" 
+                style="color: rgb(255, 255, 0) ; ">🎨 Selección de Tema</p>   
+            </div>
+            <!-- ======================= -->
+            <!-- SECCIÓN: Selección de Tema -->
+            <!-- ======================= -->
+            <div class="box">
+                <form method="POST" action="{{ url_for('main.configuracion_general') }}">
+                    <input type="hidden" name="form_type" value="theme"><br>
+
+                    <div class="has-text-centered">
+                        <div class="select">
+                            <select name="id">
+                                {% for theme in themes %}
+                                {% if theme['active'] == true %}
+                                    <option value="{{ theme['id'] }}">{{ theme['theme_name'] }}</option>
+                                {% endif %}
+                                {% endfor %}
+                                {% for theme in themes %}
+                                {% if theme['active'] == false %}
+                                    <option value="{{ theme['id'] }}">{{ theme['theme_name'] }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div><br>
+                    <div class="field has-text-centered">
+                        <button type="submit" class="button is-link ">Guardar Tema</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>    
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const frequencySelect = document.getElementById('frequency');
+    const weekdaysContainer = document.getElementById('weekdays-container');
+    const checkboxes = weekdaysContainer.querySelectorAll('input[type="checkbox"]');
+
+    // Inicial: mostrar u ocultar según el valor seleccionado al cargar
+    if(frequencySelect.value === 'weekly'){
+        weekdaysContainer.style.display = 'block';
+    } else {
+        weekdaysContainer.style.display = 'none';
+        checkboxes.forEach(cb => cb.checked = false);
+    }
+
+    // Cambiar visibilidad y desmarcar si se selecciona "Diario"
+    frequencySelect.addEventListener('change', () => {
+        if(frequencySelect.value === 'weekly'){
+            weekdaysContainer.style.display = 'block';
+        } else {
+            weekdaysContainer.style.display = 'none';
+            checkboxes.forEach(cb => cb.checked = false);
+        }
+    });
+});
+</script>
+
+{% endblock %}
+

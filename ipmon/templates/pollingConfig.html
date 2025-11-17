@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container mt-2">
+    <h1 class="title has-text-centered">🖥️ Configuración Intervalo de Consultas 🖥️</h1>
+    <div class="columns">
+        <div class="column">
+            <div class="has-text-centered">
+                <p class="title is-4 has-text-centered has-text-weight-bold" 
+                style="color: rgb(255, 255, 0);">🔍 Configuración actual de consultas</p>   
+            </div>           
+            <div class="box">
+                <table class="table is-striped" style="margin-left:auto; margin-right:auto; text-align:center;">
+                    <tr>
+                        <th style="color: #00ff37; text-align:center;">Intervalo de Consulta</th>
+                        <th style="color: #00ff37; text-align:center;">Días de almacenamiento de consultas</th>
+                        <th style="color: #00ff37; text-align:center;">Número de ciclos</th>
+                    </tr>
+                    <tr>
+                        <td style="text-align:center;">{{ polling_config['poll_interval'] }}</td>
+                        <td style="text-align:center;">{{ polling_config['history_truncate_days'] }}</td>
+                        <td style="text-align:center;">{{ app_config['stable_cycles'] }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="column">
+            <div class="has-text-centered">
+                <p class="title is-4 has-text-centered has-text-weight-bold" 
+                style="color: rgb(255, 255, 0);">🕒 Actualizar Configuración</p>   
+            </div>           
+            <div class="box">            
+            <div class="box">
+                <form method="POST" action="{{ url_for('main.configure_polling') }}" novalidate>
+                {{ form.hidden_tag() }}
+                
+                <!-- Agrupamos los tres campos en una sola línea -->
+                    <div class="columns is-centered is-vcentered">
+                        
+                        <div class="column is-one-third has-text-centered">
+                        <label class="label" style="color: #00ddff;">{{ form.interval.label.text }}</label>
+                        {{ form.interval(class_="input is-small", id="polling-interval") }}
+                        </div>
+
+                        <div class="column is-one-third has-text-centered">
+                        <label class="label" style="color: #00ddff;">{{ form.retention_days.label.text }}</label>
+                        {{ form.retention_days(class_="input is-small", id="history-retention") }}
+                        </div>
+
+                        <div class="column is-one-third has-text-centered">
+                        <label class="label" style="color: #00ddff;">{{ form.stable_cycles.label.text }}</label>
+                        {{ form.stable_cycles(class_="input is-small", id="stable-cycles") }}
+                        </div>
+
+                    </div>
+
+                    <div class="control has-text-centered mt-4">
+                        {{ form.submit(class_="button is-info is-medium") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+    </div>        
+</div>
+
+<script>
+    // Actualizar los marcadores de posición con los valores actuales de la configuración de sondeo.
+    $(document).ready(function () {
+        $("#polling-interval").attr("placeholder", "{{ polling_config['poll_interval'] }}")
+        $("#history-retention").attr("placeholder", "{{ polling_config['history_truncate_days'] }}")
+        $("#stable-cycles").attr("placeholder", "{{ app_config.stable_cycles }}")
+
+    })
+</script>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<!-- Agregar dispositivo unico -->
+<div class="column is-8 is-offset-2">
+    <div class="box">
+        <div class="has-text-centered">
+                <p class="title is-4 has-text-centered has-text-weight-bold" 
+                style="color: rgb(255, 255, 255);">🕒 ➕ Agregar Dispositivos 📡</p>   
+        </div>  <br><br>
+        <form method="POST" action="{{ url_for('hosts.add_hosts') }}" onsubmit="showLoader();" novalidate>
+            {{ form.hidden_tag() }}
+            <div class="field">
+                <div class="control">
+                    {{ form.ip_address.label(class_="label is-size-4",  style="color: rgb(255, 255, 0); ") }}
+                    {{ form.ip_address(class_="textarea is-medium", rows="10") }}
+                    <p class="subtitle is-4 has-text-warning">Introduzca la dirección IP, nombre, ciudad, campamento, host anfitrion, Tipo</p>
+                    <p class="subtitle is-4 has-text-info" >Ejemplo: 10.150.5.12, Cam Jaula, Quito, Mariana de Jesus, NVR1 MDJ, Camara</p>
+                </div>
+            </div>
+            <div class="control">
+                {{ form.submit(class_="button is-success is-medium") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+    <div class="column is-8 is-offset-2" style="margin-bottom: 0.5em;">
+            <div class="has-text-centered">
+                <p class="title is-3 has-text-centered" 
+                    style="color: rgb(255, 255, 255) ;">
+                    🤖 Configuración de Telegram</p>
+            </div>
+
+        <div id="Telegram Configuración" class="box" style="margin-bottom: 0em;">
+            
+            <!-- Tabla de configuración actual -->
+            {% if app_conf and (app_conf.telegram_token or app_conf.telegram_chat_id) %}
+            <style>
+                /* Forzamos el color del texto de los encabezados en las tablas */
+                table.table th {
+                    color: rgb(202, 173, 7) !important; /* Dorado */
+                }
+            </style>
+            
+            <div class="columns">
+                <!-- Primera parte -->
+                <div class="column">
+                    <table class="table is-striped is-fullwidth">
+                        <tr>
+                            <th class="custom-th">Token</th>
+                            <td>{{ app_conf.telegram_token }}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Segunda parte -->
+                <div class="column">
+                    <table class="table is-striped is-fullwidth">    
+                        <tr>
+                            <th class="custom-th">Chat ID</th>
+                            <td>{{ app_conf.telegram_chat_id }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <p>No hay configuración de Telegram.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="has-text-centered" style="margin-top: 0.3em;">
+            <!-- Eliminar configuración Telegram -->
+        <form method="POST" action="{{ url_for('telegram.delete_telegram_config') }}" style="display: inline-block; margin: 0 4em;">
+            <button class="button is-danger" type="submit">Borrar configuración Telegram</button>
+        </form>
+            
+            <!-- Envío mensaje de prueba Telegram -->
+        <form method="POST" action="{{ url_for('telegram.test_telegram') }}" style="display: inline-block; margin: 0 4em;">
+            <button class="button is-info" type="submit">Enviar mensaje de prueba</button>
+        </form>
+    </div><br>
+    
+    <div class="container mt-5">
+        <div class="columns">
+            <!-- Columna Izquierda: Actualizar Configuración -->
+            <div class="column">
+                <div class="has-text-centered">
+                  <p class="title is-4 has-text-centered has-text-weight-bold" 
+                    style="color: rgb(255, 255, 0);">Actualizar configuración</p>  
+                </div>
+
+                <div class="box">
+                    <form method="POST" action="{{ url_for('telegram.config_telegram') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <!-- Campo Telegram Token -->
+                        <div class="field has-text-centered">
+                            {{ form.telegram_token.label(class_="label has-text-left", style="color: #00ddff; display: block; width: 550px; margin: 0 auto 5px auto;") }}
+                            {{ form.telegram_token(class_="input is-medium is-inline-block", id="telegram-token", style="max-width: 550px;") }}
+                        </div>
+                        
+                        <!-- Campo Chat ID -->
+                        <div class="field has-text-centered">
+                            {{ form.telegram_chat_id.label(class_="label has-text-left", style="color: #00ddff; display: block; width: 550px; margin: 0 auto 5px auto;") }}
+                            {{ form.telegram_chat_id(class_="input is-medium is-inline-block", id="telegram-chat-id", style="max-width: 550px;") }}
+                        </div><br>
+
+                        <!-- Botón -->
+                        <div class="field has-text-centered mt-4">
+                            {{ form.submit(class="button is-primary is-medium") }}  
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Prueba Manual -->
+            <div class="column">
+                <div class="has-text-centered">
+                  <p class="title is-4 has-text-centered has-text-weight-bold" 
+                    style="color: rgb(255, 255, 0);">Prueba manual de Telegram</p>  
+                </div>
+
+                <div class="box">
+                    <form method="POST" action="{{ url_for('telegram.test_telegram_manual') }} " novalidate >
+                        <!-- Campo Telegram Token -->
+                        <div class="field has-text-centered">
+                            <label class="label" 
+                                    style="color: #00ddff; display: block; width: 90%; margin: 0 auto 5px auto; text-align: left;">
+                                Token
+                            </label>
+
+                            <div class="control" style="width: 90%; margin: 0 auto;">
+                                <input class="input is-medium" 
+                                    type="text" 
+                                    name="telegram_token" 
+                                    placeholder="Ingresa el token manualmente" 
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="field has-text-centered">
+                            <label class="label" 
+                                    style="color: #00ddff; display: block; width: 90%; margin: 0 auto 5px auto; text-align: left;">
+                                Chat ID
+                            </label>
+
+                            <div class="control" style="width: 90%; margin: 0 auto;">
+                                <input class="input is-medium" 
+                                    type="text" 
+                                    name="telegram_chat_id" 
+                                    placeholder="Ingresa el token manualmente" 
+                                    required>
+                            </div><br>
+                        </div>
+                        
+                        <!-- Botón -->
+                        <div class="field has-text-centered mt-4">
+                            <button class="button is-link is-medium" type="submit">Enviar mensaje manual</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% if app_conf %}
+<script>
+    // Actualizar los placeholders con los valores actuales de configuración de Telegram
+    $(document).ready(function () {
+        // Solo actualiza el placeholder, no el valor actual
+        $("#telegram-token").attr("placeholder", "{{ app_conf.telegram_token or '' }}");
+        $("#telegram-chat-id").attr("placeholder", "{{ app_conf.telegram_chat_id or '' }}");
+    });
+</script>
+{% endif %}
+
+
+{% endblock %}
