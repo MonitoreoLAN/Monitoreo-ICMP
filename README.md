@@ -1,136 +1,93 @@
-# 🌐 Monitoreo ICMP / LAN
+Monitorear direcciones IP mediante solicitudes ICMP (ping) por medio de consultas.
+Se proporciona una aplicación web mediante Flask para ver los estados de las direcciones IP y el historial de encuestas.
+La encuesta se ejecuta como un servicio como parte de la aplicación web.
+Se utiliza una base de datos SQLite para almacenar hosts, resultados de encuestas, cuentas de usuario, etc.
 
 **Configuración**
+Los siguientes ajustes deberán realizarse para la configuración:
 
-Monitoreo de direcciones IP mediante solicitudes ICMP (ping), con visualización web, historial y almacenamiento en SQLite.  
-Aplicación construida en **Flask**, con scheduler integrado para ejecutar escaneos automáticos.
+```Cambiar Politicas (solo Windows)```
 
----
+ En windows cambiar las politicas, ejecute Powershell como administrdor y ejecute el siguiente comando:
 
-## 🏷️ Badges
-![Python](https://img.shields.io/badge/Python-3.11+-blue)
-![Flask](https://img.shields.io/badge/Flask-App-black)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-Active-success)
+     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
----
 
-## 📌 Características
+```Instalar Python```
 
-- ✔️ Monitoreo ICMP continuo  
-- ✔️ Dashboard web  
-- ✔️ Registro histórico  
-- ✔️ Base SQLite integrada  
-- ✔️ Compatible Windows / Linux  
+1.- Python 3.11+ debe estar instalado.
 
----
+2.- Dirigase al directorio donde desee instalar el repositorio.
 
-## ⚙️ Requisitos Previos
 
-- Python **3.11+**
-- Git
-- Permisos administrativos para ICMP
+```Clonar el repositorio```
+    
+3.- Clonar el repositorio
+    apt install git
+    
+    git clone https://github.com/MonitoreoLAN/MONITOREO-TLPG.git 
 
----
 
-## 🔐 1. Cambiar Política de Ejecución (Windows)
 
-Abrir PowerShell como administrador y ejecutar:
+4.- Ingrese al directorio principal del Proyecto
 
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+     cd MONITOREO-TLPG
+     
 
-📥 2. Clonar el Repositorio
-Opción HTTPS:
+```Entorno Virtual```
 
-git clone https://github.com/MonitoreoLAN/Monitoreo-ICMP.git
+5.- Crear el entorno virtual con el siguiente comando:
 
-Opción SSH:
+Sistema Operativo Windows
 
-git clone git@github.com:MonitoreoLAN/Monitoreo_IPS.git
 
-Entrar al directorio:
+       Python -m venv .venv
 
-cd Monitoreo_IPS
+       
+ Sistema Operativo  Linux
+   
+       virtualenv .venv
 
-🧪 3. Crear el Entorno Virtual
-Windows:
+       
+6.- Activar el entorno virtual con el siguiente comando:
 
-python -m venv .venv
+ Sistema Operativo Windows
+ 
+         .\.venv\Scripts\activate
+         
+ Sistema Operativo  Linux     
+ 
+          source .venv/bin/activate
+   ```Actualizar PIP```
 
-Linux:
+   
+7.-  ejecute el siguiente comando:SOLO PARA WINDOWS
 
-virtualenv .venv
+    python.exe -m pip install --upgrade pip
+       
+8.- Desde el directorio principal de este repositorio, ejecute el siguiente comando:
 
-Activar entorno
+     pip install -r requirements.txt
 
-Windows:
 
-.\.venv\Scripts\activate
+   ```Iniciar el Servidor```
 
-Linux:
+9.- poner en marcha el servidor, ejecute el siguiente comando:
 
-source .venv/bin/activate
+    flask run
 
-📦 4. Instalar Dependencias
-(Opcional en Windows) Actualizar pip:
+  Flask corre pór defecto en el puerto 5000 si desea cambiar el puerto ejecute el siguiente comando:
 
-            python.exe -m pip install --upgrade pip
+    flask run --port 
 
-Instalar dependencias:
+  Para aceptar peticiones de otros ordenadores de nuestra red lanzaremos el servidor de la siguiente manera:
 
-pip install -r requirements.txt
+     flask run --host  --port 
 
-🚀 5. Iniciar el Servidor Flask
-Ejecutar:
+ Nota: para ejecutar una aplicación Flask en modo de depuración:
+ 
+     flask run --debug
 
-flask run
-
-Se abrirá en:
-
-http://127.0.0.1:5000
-
-Cambiar el puerto:
-
-flask run --port 5050
-
-Permitir conexiones desde la red:
-
-flask run --host 0.0.0.0 --port 5000
-
-Modo depuración:
-
-flask run --debug
-
-🗂️ Estructura del Proyecto
-
-Monitoreo_IPS/
-│── ipmon/
-│   ├── static/
-│   ├── templates/
-│   ├── models/
-│   ├── scheduler/
-│   ├── smtp.py
-│   ├── alerts.py
-│   └── ...
-│
-├── requirements.txt
-├── README.md
-└── .gitignore
-
-🛠️ Tecnologías
-
-    Python
-
-    Flask
-
-    SQLite
-
-    SQLAlchemy
-
-    APScheduler
-
-    ICMPLib / Ping
 
 
 
