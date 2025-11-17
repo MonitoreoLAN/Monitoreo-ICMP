@@ -25,12 +25,23 @@ Aplicación construida en **Flask**, con scheduler integrado para ejecutar escan
 ## ⚙️ Requisitos Previos
 
 - Python **3.11+**
-
 ---
-Monitorear direcciones IP mediante solicitudes ICMP (ping) por medio de consultas.
-Se proporciona una aplicación web mediante Flask para ver los estados de las direcciones IP y el historial de encuestas.
-La encuesta se ejecuta como un servicio como parte de la aplicación web.
-Se utiliza una base de datos SQLite para almacenar hosts, resultados de encuestas, cuentas de usuario, etc.
+
+🛠️ Tecnologías
+
+Python
+
+Flask
+
+SQLite
+
+SQLAlchemy
+
+APScheduler
+
+ICMPLib / Ping
+---
+
 
 **Configuración**
 
@@ -108,6 +119,7 @@ Sistema Operativo Windows
  Nota: para ejecutar una aplicación Flask en modo de depuración:
  
      flask run --debug
+
 
 
 
