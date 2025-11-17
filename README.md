@@ -1,5 +1,7 @@
 # 🌐 Monitoreo ICMP / LAN
 
+**Configuración**
+
 Monitoreo de direcciones IP mediante solicitudes ICMP (ping), con visualización web, historial y almacenamiento en SQLite.  
 Aplicación construida en **Flask**, con scheduler integrado para ejecutar escaneos automáticos.
 
@@ -129,6 +131,7 @@ Monitoreo_IPS/
     APScheduler
 
     ICMPLib / Ping
+
 
 
 
