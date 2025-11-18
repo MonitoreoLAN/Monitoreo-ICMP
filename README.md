@@ -74,6 +74,11 @@ Sistema Operativo Windows
    
        virtualenv .venv
 
+                       o
+       
+       python3 -m venv venv 
+
+
  Sistema Operativo  Raspbian (instalar OpenCV compatible con tu versión de Python)
 
        sudo apt-get install python3-opencv -y
@@ -91,6 +96,8 @@ Sistema Operativo Windows
  Sistema Operativo  Linux  Y Raspbian 
  
           source .venv/bin/activate
+          source venv/bin/activate
+          
    ```Actualizar PIP```
    
 7.-  ejecute el siguiente comando:SOLO PARA WINDOWS
@@ -119,6 +126,7 @@ Sistema Operativo Windows
  Nota: para ejecutar una aplicación Flask en modo de depuración:
  
      flask run --debug
+
 
 
 
